@@ -3,7 +3,7 @@ services:
     name: speakwise
     runtime: node
     plan: free
-    buildCommand: pnpm install --frozen-lockfile && cp artifacts/speakwise/index.template artifacts/speakwise/index.html && PORT=10000 BASE_PATH=/ pnpm --filter @workspace/speakwise run build && pnpm --filter @workspace/api-server run build
+    buildCommand: pnpm install --frozen-lockfile && base64 -d artifacts/speakwise/index.b64 > artifacts/speakwise/index.html && PORT=10000 BASE_PATH=/ pnpm --filter @workspace/speakwise run build && pnpm --filter @workspace/api-server run build
     startCommand: pnpm --filter @workspace/api-server run start
     healthCheckPath: /api/healthz
     envVars:
