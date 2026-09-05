@@ -1,0 +1,532 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: subjects
+    description: Subjects and syllabus
+  - name: learning
+    description: AI learning actions
+  - name: resources
+    description: Recommended learning resources
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /subjects:
+    get:
+      operationId: listSubjects
+      tags: [subjects]
+      summary: List saved subjects
+      responses:
+        "200":
+          description: Subjects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Subject"
+    post:
+      operationId: createSubject
+      tags: [subjects]
+      summary: Add a subject and syllabus
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubjectInput"
+      responses:
+        "201":
+          description: Created subject
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subject"
+  /subjects/{id}:
+    delete:
+      operationId: deleteSubject
+      tags: [subjects]
+      summary: Delete a subject
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Subject not found
+  /subjects/{id}/notes:
+    post:
+      operationId: generateSubjectNotes
+      tags: [learning]
+      summary: Generate exam-ready notes for a subject
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotesInput"
+      responses:
+        "200":
+          description: Generated notes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeneratedNotes"
+  /learning/correct:
+    post:
+      operationId: correctEnglish
+      tags: [learning]
+      summary: Correct an English response
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CorrectionInput"
+      responses:
+        "200":
+          description: Correction feedback
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Correction"
+  /learning/chat:
+    post:
+      operationId: sendLearningChat
+      tags: [learning]
+      summary: Talk with the English coach
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatInput"
+      responses:
+        "200":
+          description: Coach reply
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatReply"
+  /learning/interview:
+    post:
+      operationId: runMockInterview
+      tags: [learning]
+      summary: Continue a mock interview turn
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InterviewInput"
+      responses:
+        "200":
+          description: Interview prompt and feedback
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InterviewReply"
+  /learning/exam-plan:
+    post:
+      operationId: generateExamPlan
+      tags: [learning]
+      summary: Generate a focused exam preparation plan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExamPlanInput"
+      responses:
+        "200":
+          description: Exam plan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExamPlanReply"
+  /learning/coding:
+    post:
+      operationId: reviewCodingAnswer
+      tags: [learning]
+      summary: Create or review a coding round challenge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CodingInput"
+      responses:
+        "200":
+          description: Coding challenge feedback
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CodingReply"
+  /learning/voice:
+    post:
+      operationId: sendVoicePractice
+      tags: [learning]
+      summary: Transcribe a spoken practice turn and reply with audio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VoiceInput"
+      responses:
+        "200":
+          description: Voice coach response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VoiceReply"
+  /resources:
+    get:
+      operationId: listResources
+      tags: [resources]
+      summary: List recommended books and videos
+      parameters:
+        - name: subject
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Resources
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Resource"
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [learning]
+      summary: Get learning dashboard summary
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dashboard"
+components:
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    Subject:
+      type: object
+      required: [id, name, color, syllabus, progress, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        color:
+          type: string
+        syllabus:
+          type: string
+        progress:
+          type: integer
+        createdAt:
+          type: string
+    SubjectInput:
+      type: object
+      required: [name, syllabus]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        syllabus:
+          type: string
+          minLength: 1
+        color:
+          type: string
+    NotesInput:
+      type: object
+      properties:
+        focus:
+          type: string
+    GeneratedNotes:
+      type: object
+      required: [title, overview, sections, examTips]
+      properties:
+        title:
+          type: string
+        overview:
+          type: string
+        sections:
+          type: array
+          items:
+            $ref: "#/components/schemas/NoteSection"
+        examTips:
+          type: array
+          items:
+            type: string
+    NoteSection:
+      type: object
+      required: [heading, points]
+      properties:
+        heading:
+          type: string
+        points:
+          type: array
+          items:
+            type: string
+    CorrectionInput:
+      type: object
+      required: [text]
+      properties:
+        text:
+          type: string
+          minLength: 1
+        context:
+          type: string
+        level:
+          type: string
+    Correction:
+      type: object
+      required: [corrected, explanation, alternatives, score]
+      properties:
+        corrected:
+          type: string
+        explanation:
+          type: string
+        alternatives:
+          type: array
+          items:
+            type: string
+        score:
+          type: integer
+    ChatInput:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+          minLength: 1
+        history:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChatTurn"
+        goal:
+          type: string
+    ChatTurn:
+      type: object
+      required: [role, content]
+      properties:
+        role:
+          type: string
+          enum: [user, assistant]
+        content:
+          type: string
+    ChatReply:
+      type: object
+      required: [message, correction]
+      properties:
+        message:
+          type: string
+        correction:
+          type: string
+    InterviewInput:
+      type: object
+      required: [mode]
+      properties:
+        mode:
+          type: string
+          enum: [start, answer]
+        role:
+          type: string
+        question:
+          type: string
+        answer:
+          type: string
+        history:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChatTurn"
+    InterviewReply:
+      type: object
+      required: [question, feedback, score, finished]
+      properties:
+        question:
+          type: string
+        feedback:
+          type: string
+        score:
+          type: integer
+        finished:
+          type: boolean
+    ExamPlanInput:
+      type: object
+      required: [exam, dailyMinutes]
+      properties:
+        exam:
+          type: string
+          enum: [cds2, academic, coding]
+        targetDate:
+          type: string
+        dailyMinutes:
+          type: integer
+          minimum: 10
+        topics:
+          type: string
+    ExamPlanReply:
+      type: object
+      required: [title, summary, weeks, today, checkpoints]
+      properties:
+        title:
+          type: string
+        summary:
+          type: string
+        weeks:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExamPlanWeek"
+        today:
+          type: array
+          items:
+            type: string
+        checkpoints:
+          type: array
+          items:
+            type: string
+    ExamPlanWeek:
+      type: object
+      required: [title, focus, tasks]
+      properties:
+        title:
+          type: string
+        focus:
+          type: string
+        tasks:
+          type: array
+          items:
+            type: string
+    CodingInput:
+      type: object
+      required: [mode, language, topic, difficulty]
+      properties:
+        mode:
+          type: string
+          enum: [start, review]
+        language:
+          type: string
+        topic:
+          type: string
+        difficulty:
+          type: string
+          enum: [easy, medium, hard]
+        prompt:
+          type: string
+        answer:
+          type: string
+    CodingReply:
+      type: object
+      required: [prompt, explanation, idealApproach, score, nextStep, tests]
+      properties:
+        prompt:
+          type: string
+        explanation:
+          type: string
+        idealApproach:
+          type: string
+        score:
+          type: integer
+        nextStep:
+          type: string
+        tests:
+          type: array
+          items:
+            type: string
+    VoiceInput:
+      type: object
+      required: [audio, mimeType]
+      properties:
+        audio:
+          type: string
+          description: Base64-encoded recorded audio
+        mimeType:
+          type: string
+        goal:
+          type: string
+    VoiceReply:
+      type: object
+      required: [transcript, response, audio, audioMimeType]
+      properties:
+        transcript:
+          type: string
+        response:
+          type: string
+        audio:
+          type: string
+          description: Base64-encoded MP3 audio
+        audioMimeType:
+          type: string
+    Resource:
+      type: object
+      required: [title, type, author, description, url, duration]
+      properties:
+        title:
+          type: string
+        type:
+          type: string
+          enum: [video, ebook]
+        author:
+          type: string
+        description:
+          type: string
+        url:
+          type: string
+        duration:
+          type: string
+    Dashboard:
+      type: object
+      required: [streak, minutesThisWeek, weeklyGoal, nextSession, subjectCount]
+      properties:
+        streak:
+          type: integer
+        minutesThisWeek:
+          type: integer
+        weeklyGoal:
+          type: integer
+        nextSession:
+          type: string
+        subjectCount:
+          type: integer
+
