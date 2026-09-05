@@ -1,0 +1,1 @@
+- [AI provider fallback](ai-provider-fallback.md) — managed AI may require an upgrade; use secure provider-key fallback and distinguish quota errors from code failures.
