@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Speakwise"
+description = "An AI-powered English speaking coach and mock interview companion that turns a learner's subjects and syllabus into study notes, practice conversations, corrections, curated resources, and timetable-based reminders."
+version = "1.0.0"
+id = "artifacts/speakwise"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19147
+
+[services.development]
+run = "pnpm --filter @workspace/speakwise run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/speakwise", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/speakwise/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19147"
+BASE_PATH = "/"
